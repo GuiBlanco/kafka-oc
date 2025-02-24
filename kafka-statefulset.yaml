@@ -28,19 +28,17 @@ spec:
         - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
           value: "CONTROLLER"
         - name: KAFKA_CFG_LISTENERS
-          value: "PLAINTEXT://:9092,CONTROLLER://:9093,SSL://:9094"
+          value: "PLAINTEXT://:9092,SSL://:9094,CONTROLLER://:9093"
         - name: KAFKA_CFG_ADVERTISED_LISTENERS
-          value: "PLAINTEXT://$(POD_NAME).kafka-headless:9092,SSL://$(POD_NAME).kafka-headless:9094"
+          value: "PLAINTEXT://kafka-0.kafka-headless:9092,SSL://kafka-0.kafka-headless:9094"
         - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
-          value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL"
+          value: "PLAINTEXT:PLAINTEXT,SSL:SSL,CONTROLLER:PLAINTEXT"
+        - name: KAFKA_CFG_INTER_BROKER_LISTENER_NAME
+          value: "PLAINTEXT"
         - name: ALLOW_PLAINTEXT_LISTENER
           value: "yes"
         - name: KAFKA_KRAFT_CLUSTER_ID
           value: "abcdefghijklmnopqrstuv"
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
         - name: KAFKA_CFG_NODE_ID
           value: "1"
         - name: KAFKA_CFG_SSL_KEYSTORE_LOCATION

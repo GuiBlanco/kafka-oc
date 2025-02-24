@@ -1,8 +1,11 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: kafka-ssl
+  name: kafka-broker
+  labels:
+    app: kafka
 spec:
+  host: kafka-broker.apps.cluster.domain
   port:
     targetPort: ssl
   tls:
@@ -11,4 +14,33 @@ spec:
     kind: Service
     name: kafka
     weight: 100
-  wildcardPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: kafka-broker-internal
+  labels:
+    app: kafka
+spec:
+  host: kafka-broker-internal.apps.cluster.domain
+  port:
+    targetPort: broker
+  to:
+    kind: Service
+    name: kafka
+    weight: 100
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: kafka-controller
+  labels:
+    app: kafka
+spec:
+  host: kafka-controller.apps.cluster.domain
+  port:
+    targetPort: controller
+  to:
+    kind: Service
+    name: kafka-headless
+    weight: 100

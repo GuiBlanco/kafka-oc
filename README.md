@@ -1,18 +1,24 @@
 # Implantação do Kafka no OpenShift usando KRaft (sem Zookeeper)
 
-Este repositório contém manifestos Kubernetes para implantar o Apache Kafka no OpenShift usando imagens Bitnami e o modo KRaft (sem Zookeeper), configurado para um único pod.
+Este repositório contém manifestos Kubernetes para implantar o Apache Kafka no OpenShift usando imagens Bitnami e o modo KRaft (sem Zookeeper), configurado para um único pod com suporte a SSL e rotas expostas.
 
 ## Componentes
 
 - Kafka (1 broker)
 - Armazenamento persistente para Kafka
 - Serviço headless para Kafka
+- Configuração SSL para comunicação segura
+- Routes OpenShift para acesso externo
 
 ## Pré-requisitos
 
 - Acesso ao cluster OpenShift
 - Ferramenta de linha de comando `oc` instalada
 - Permissões apropriadas para criar recursos em seu namespace
+- Secret 'kafka-certificates' contendo:
+  - keystore.jks
+  - truststore.jks
+  - Senhas configuradas como "secret"
 
 ## Instruções de Implantação
 
@@ -21,19 +27,9 @@ Este repositório contém manifestos Kubernetes para implantar o Apache Kafka no
 oc new-project kafka-project
 ```
 
-2. Implante a configuração do Kafka:
+2. Implante todos os recursos:
 ```bash
-oc apply -f kafka-configmap.yaml
-```
-
-3. Crie os serviços do Kafka:
-```bash
-oc apply -f kafka-service.yaml
-```
-
-4. Implante o broker do Kafka:
-```bash
-oc apply -f kafka-statefulset.yaml
+oc apply -f kafka-configmap.yaml,kafka-statefulset.yaml,kafka-service.yaml,kafka-pvc.yaml,kafka-route.yaml
 ```
 
 ## Verificação
@@ -48,28 +44,63 @@ oc get pods
 oc logs kafka-0
 ```
 
-3. Teste o cluster Kafka:
+3. Verifique as rotas expostas:
 ```bash
-# Crie um tópico de teste
-oc exec kafka-0 -- bin/kafka-topics.sh --create --topic test-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+oc get routes
+```
 
-# Liste os tópicos
-oc exec kafka-0 -- bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+4. Teste o cluster Kafka com SSL:
+```bash
+# Crie um tópico de teste usando SSL
+oc exec kafka-0 -- bin/kafka-topics.sh --create --topic test-topic --bootstrap-server localhost:9094 \
+  --command-config /opt/bitnami/kafka/config/certs/client-ssl.properties \
+  --partitions 1 --replication-factor 1
+
+# Liste os tópicos usando SSL
+oc exec kafka-0 -- bin/kafka-topics.sh --list --bootstrap-server localhost:9094 \
+  --command-config /opt/bitnami/kafka/config/certs/client-ssl.properties
 ```
 
 ## Detalhes de Configuração
 
 - Versão do Kafka: 3.6.1
-- Portas do Kafka: 9092 (PLAINTEXT), 9093 (CONTROLLER)
+- Portas do Kafka:
+  - 9092 (PLAINTEXT - interno)
+  - 9093 (CONTROLLER)
+  - 9094 (SSL)
 - Armazenamento: 10Gi para o broker
+- SSL ativado na porta 9094
+- Routes configuradas:
+  - kafka-broker: SSL (passthrough)
+  - kafka-broker-internal: PLAINTEXT
+  - kafka-controller: CONTROLLER
 
-## Considerações de Segurança
+## Configuração SSL
 
-Esta implantação usa listeners PLAINTEXT para simplicidade. Para ambientes de produção, você deve:
-1. Habilitar autenticação
-2. Configurar criptografia TLS
-3. Configurar mecanismos SASL apropriados
-4. Implementar políticas de segurança adequadas
+Esta implantação usa SSL para comunicação segura:
+1. Certificados montados do secret 'kafka-certificates'
+2. Keystore e Truststore configurados com senha "secret"
+3. SSL ativado na porta 9094
+4. Route configurado com SSL passthrough para acesso externo seguro
+
+### Exemplo de client-ssl.properties
+```properties
+security.protocol=SSL
+ssl.truststore.location=/opt/bitnami/kafka/config/certs/truststore.jks
+ssl.truststore.password=secret
+ssl.keystore.location=/opt/bitnami/kafka/config/certs/keystore.jks
+ssl.keystore.password=secret
+```
+
+## Rotas Expostas
+
+1. kafka-broker: Acesso SSL externo
+   - Porta: 9094
+   - TLS: Passthrough
+2. kafka-broker-internal: Acesso PLAINTEXT interno
+   - Porta: 9092
+3. kafka-controller: Acesso ao controller
+   - Porta: 9093
 
 ## Manutenção
 
@@ -100,15 +131,20 @@ oc logs kafka-0
 3. Problemas comuns:
 - Problemas de provisionamento de armazenamento
 - Problemas de conectividade de rede
-- Erros de configuração
+- Erros de configuração SSL
+- Problemas com certificados
+
+### Verificação de Conectividade SSL
+Para testar a conectividade SSL:
+```bash
+openssl s_client -connect <kafka-broker-route-hostname>:443 -tls1_2
+```
 
 ## Limpeza
 
 Para remover todos os recursos:
 ```bash
-oc delete -f kafka-statefulset.yaml
-oc delete -f kafka-service.yaml
-oc delete -f kafka-configmap.yaml
+oc delete -f kafka-statefulset.yaml,kafka-service.yaml,kafka-configmap.yaml,kafka-pvc.yaml,kafka-route.yaml
 ```
 
 Observação: O PersistentVolumeClaim precisará ser excluído separadamente se você quiser remover todos os dados.
