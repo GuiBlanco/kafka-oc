@@ -19,3 +19,8 @@ data:
     allow.plaintext.listener=yes
     kafka.kraft.cluster.id=abcdefghijklmnopqrstuv
     node.id=1
+    socket.request.max.bytes=419430400
+    replica.fetch.max.bytes=419430400
+    message.max.bytes=419430400
+    max.request.size=419430400
+    max.partition.fetch.bytes=419430400

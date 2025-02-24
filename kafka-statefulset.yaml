@@ -49,6 +49,16 @@ spec:
           value: "/opt/bitnami/kafka/config/certs/truststore.jks"
         - name: KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD
           value: "secret"
+        - name: KAFKA_CFG_SOCKET_REQUEST_MAX_BYTES
+          value: "419430400"
+        - name: KAFKA_CFG_REPLICA_FETCH_MAX_BYTES
+          value: "419430400"
+        - name: KAFKA_CFG_MESSAGE_MAX_BYTES
+          value: "419430400"
+        - name: KAFKA_CFG_MAX_REQUEST_SIZE
+          value: "419430400"
+        - name: KAFKA_CFG_MAX_PARTITION_FETCH_BYTES
+          value: "419430400"
         volumeMounts:
         - name: kafka-data
           mountPath: /bitnami/kafka
