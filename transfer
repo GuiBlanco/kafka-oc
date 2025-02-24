@@ -1,1 +1,2 @@
 
+0/10 nodes are available: 3 node(s) had untolerated taint {node-role.kubernetes.io/infra: }, 3 node(s) had untolerated taint {node-role.kubernetes.io/master: }, 4 Insufficient cpu. preemption: 0/10 nodes are available: 4 No preemption victims found for incoming pod, 6 Preemption is not helpful for scheduling.
