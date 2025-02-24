@@ -46,29 +46,25 @@ spec:
         - name: KAFKA_CFG_SSL_KEYSTORE_LOCATION
           value: "/opt/bitnami/kafka/config/certs/keystore.jks"
         - name: KAFKA_CFG_SSL_KEYSTORE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: kafka-certificates
-              key: keystore-password
+          value: "secret"
         - name: KAFKA_CFG_SSL_TRUSTSTORE_LOCATION
           value: "/opt/bitnami/kafka/config/certs/truststore.jks"
         - name: KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: kafka-certificates
-              key: truststore-password
+          value: "secret"
         volumeMounts:
-        - name: data
+        - name: kafka-data
           mountPath: /bitnami/kafka
-        - name: certificates
+        - name: kafka-certificates
           mountPath: /opt/bitnami/kafka/config/certs
+          readOnly: true
       volumes:
-      - name: certificates
+      - name: kafka-certificates
         secret:
           secretName: kafka-certificates
+          defaultMode: 0400
   volumeClaimTemplates:
   - metadata:
-      name: data
+      name: kafka-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
