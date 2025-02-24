@@ -6,6 +6,7 @@ data:
   server.properties: |
     process.roles=broker,controller
     node.id=1
+    broker.id=1
     controller.quorum.voters=1@kafka-0.kafka-headless:9093
     listeners=PLAINTEXT://:9092,SSL://:9094,CONTROLLER://:9093
     advertised.listeners=PLAINTEXT://kafka-0.kafka-headless:9092,SSL://kafka-0.kafka-headless:9094
@@ -18,18 +19,11 @@ data:
     ssl.truststore.password=secret
     allow.plaintext.listener=yes
     kraft.cluster.id=abcdefghijklmnopqrstuv
-    node.id=1
-    socket.request.max.bytes=419430400
-    replica.fetch.max.bytes=419430400
-    message.max.bytes=419430400
-    max.request.size=419430400
-    max.partition.fetch.bytes=419430400
-    broker.id=1
-    broker.rack=rack1
-    num.network.threads=3
-    num.io.threads=8
+    num.network.threads=8
+    num.io.threads=16
     socket.send.buffer.bytes=102400
     socket.receive.buffer.bytes=102400
+    socket.request.max.bytes=104857600
     log.dirs=/bitnami/kafka/data
     num.partitions=1
     num.recovery.threads.per.data.dir=1
@@ -39,3 +33,13 @@ data:
     log.retention.hours=168
     log.segment.bytes=1073741824
     log.retention.check.interval.ms=300000
+    max.request.size=104857600
+    replica.fetch.max.bytes=104857600
+    message.max.bytes=104857600
+    delete.topic.enable=false
+    auto.create.topics.enable=false
+    broker.id.generation.enable=false
+    metadata.max.retention.ms=604800000
+    controlled.shutdown.enable=true
+    controlled.shutdown.max.retries=3
+    controlled.shutdown.retry.backoff.ms=5000
