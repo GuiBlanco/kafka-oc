@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: kafka-ssl
+spec:
+  port:
+    targetPort: ssl
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: kafka
+    weight: 100
+  wildcardPolicy: None

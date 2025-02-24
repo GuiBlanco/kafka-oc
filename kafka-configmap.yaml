@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+data:
+  server.properties: |
+    process.roles=broker,controller
+    node.id=1
+    controller.quorum.voters=1@kafka-0.kafka-headless:9093
+    listeners=PLAINTEXT://:9092,SSL://:9094
+    advertised.listeners=PLAINTEXT://$(POD_NAME).kafka-headless:9092,SSL://$(POD_NAME).kafka-headless:9094
+    listener.security.protocol.map=PLAINTEXT:PLAINTEXT,SSL:SSL
+    ssl.keystore.location=/opt/bitnami/kafka/config/certs/keystore.jks
+    ssl.keystore.password=secret
+    ssl.truststore.location=/opt/bitnami/kafka/config/certs/truststore.jks
+    ssl.truststore.password=secret
+    allow.plaintext.listener=yes
+    kafka.kraft.cluster.id=abcdefghijklmnopqrstuv
+    pod.name=$(POD_NAME)
+    kafka.node.id=1
